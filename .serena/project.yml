@@ -1,0 +1,9 @@
+name: circle-bord
+description: University circle sports practice game matching application
+primary_language: typescript
+frameworks:
+  - react
+  - typescript
+main_files:
+  - src/App.tsx
+  - src/index.tsx

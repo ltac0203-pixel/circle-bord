@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm start)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Read(//c/Users/mryot/**)"
     ],
     "deny": [],
     "ask": []

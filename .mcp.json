@@ -14,6 +14,21 @@
         "C:/product/circle-bord"
       ],
       "env": {}
+    },
+    "serena-mcp-server": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "C:/product/circle-bord"
+      ],
+      "env": {}
     }
   }
 }
