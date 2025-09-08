@@ -4,7 +4,15 @@
       "Bash(npm start)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Read(//c/Users/mryot/**)"
+      "Read(//c/Users/mryot/**)",
+      "mcp__serena-mcp-server__check_onboarding_performed",
+      "mcp__serena-mcp-server__onboarding",
+      "mcp__serena-mcp-server__list_dir",
+      "mcp__serena-mcp-server__get_symbols_overview",
+      "mcp__serena-mcp-server__find_symbol",
+      "mcp__serena-mcp-server__write_memory",
+      "mcp__serena-mcp-server__read_memory",
+      "mcp__serena-mcp-server__search_for_pattern"
     ],
     "deny": [],
     "ask": []

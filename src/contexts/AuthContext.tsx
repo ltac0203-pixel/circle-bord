@@ -31,7 +31,6 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    // デモ用: ローカルストレージから復元
     const savedUser = localStorage.getItem('demo_user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
@@ -39,10 +38,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAuthenticated = !!user;
 
   const signIn = async (email: string, password: string) => {
-    // デモ用の簡単な認証
-    // 実際のアプリではAPIを呼び出す
-    
-    // デモ: どんなメールアドレスとパスワードでもOK
     if (email && password) {
       const demoUser: User = {
         id: Date.now().toString(),
@@ -59,7 +54,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const signUp = async (email: string, password: string, name: string, teamName?: string) => {
-    // デモ用の簡単な登録
     if (email && password && name) {
       const newUser: User = {
         id: Date.now().toString(),

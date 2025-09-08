@@ -42,7 +42,6 @@ export const Dashboard: React.FC = () => {
     'ハンドボール', 'フットサル', 'その他'
   ];
 
-  // 自動マッチング機能
   useEffect(() => {
     checkForMatches();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,7 +55,6 @@ export const Dashboard: React.FC = () => {
         const game1 = openGames[i];
         const game2 = openGames[j];
         
-        // 同じ日時・スポーツでマッチング
         if (
           game1.date === game2.date &&
           game1.time === game2.time &&
@@ -79,7 +77,6 @@ export const Dashboard: React.FC = () => {
     
     setMatches(prev => [...prev, newMatch]);
     
-    // ゲームのステータスを更新
     setGames(prev => prev.map(g => {
       if (g.id === game1.id || g.id === game2.id) {
         return {
@@ -91,7 +88,6 @@ export const Dashboard: React.FC = () => {
       return g;
     }));
     
-    // 通知を表示
     showNotification(`マッチング成立！ ${game1.teamName} × ${game2.teamName}`);
   };
 
@@ -121,7 +117,6 @@ export const Dashboard: React.FC = () => {
     
     setGames([...games, newGame]);
     
-    // フォームをリセット
     setTeamName(user?.teamName || '');
     setSport('');
     setDate('');
@@ -134,12 +129,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleDeleteGame = (id: number) => {
-    // マッチングも削除
     setMatches(prev => prev.filter(m => 
       m.game1.id !== id && m.game2.id !== id
     ));
     
-    // 関連するゲームのステータスを戻す
     const game = games.find(g => g.id === id);
     if (game && game.matchedWith) {
       setGames(prev => prev.map(g => {
