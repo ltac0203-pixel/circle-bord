@@ -17,7 +17,21 @@ export const Header: React.FC = () => {
       <div className="header-container">
         <div className="header-left">
           <h1>🏃 大学サークル練習試合マッチング</h1>
-          <p className="header-subtitle">日時が一致する相手と自動マッチング！</p>
+          <p className="header-subtitle">申請・承諾でマッチング成立！</p>
+          <nav className="header-nav">
+            <button 
+              className="nav-button"
+              onClick={() => navigate('/')}
+            >
+              🏠 ホーム
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => navigate('/my-dashboard')}
+            >
+              📊 Myダッシュボード
+            </button>
+          </nav>
         </div>
         
         <div className="header-right">

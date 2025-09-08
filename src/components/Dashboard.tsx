@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Header } from './Header';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,21 +11,53 @@ interface Game {
   location: string;
   contact: string;
   status: 'open' | 'matched';
-  matchedWith?: number;
+  ownerId: string;
   description?: string;
+}
+
+interface Application {
+  id: number;
+  gameId: number;
+  applicantTeamName: string;
+  applicantContact: string;
+  applicantId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  appliedAt: Date;
+  message?: string;
 }
 
 interface Match {
   id: number;
-  game1: Game;
-  game2: Game;
+  game: Game;
+  applicant: {
+    teamName: string;
+    contact: string;
+    id: string;
+  };
   matchedAt: Date;
 }
 
-export const Dashboard: React.FC = () => {
+interface DashboardProps {
+  games: Game[];
+  setGames: React.Dispatch<React.SetStateAction<Game[]>>;
+  applications: Application[];
+  setApplications: React.Dispatch<React.SetStateAction<Application[]>>;
+  matches: Match[];
+  setMatches: React.Dispatch<React.SetStateAction<Match[]>>;
+  showNotification: (message: string) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({
+  games,
+  setGames,
+  applications,
+  setApplications,
+  matches,
+  setMatches,
+  showNotification
+}) => {
   const { user } = useAuth();
-  const [games, setGames] = useState<Game[]>([]);
-  const [matches, setMatches] = useState<Match[]>([]);
+  
   const [teamName, setTeamName] = useState(user?.teamName || '');
   const [sport, setSport] = useState('');
   const [date, setDate] = useState('');
@@ -34,67 +66,12 @@ export const Dashboard: React.FC = () => {
   const [contact, setContact] = useState(user?.email || '');
   const [description, setDescription] = useState('');
   const [filterSport, setFilterSport] = useState('all');
-  const [notification, setNotification] = useState<string | null>(null);
 
   const sports = [
     'サッカー', 'バスケットボール', 'バレーボール', 'テニス',
     '野球', 'ソフトボール', 'バドミントン', '卓球',
     'ハンドボール', 'フットサル', 'その他'
   ];
-
-  useEffect(() => {
-    checkForMatches();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [games]);
-
-  const checkForMatches = () => {
-    const openGames = games.filter(g => g.status === 'open');
-    
-    for (let i = 0; i < openGames.length; i++) {
-      for (let j = i + 1; j < openGames.length; j++) {
-        const game1 = openGames[i];
-        const game2 = openGames[j];
-        
-        if (
-          game1.date === game2.date &&
-          game1.time === game2.time &&
-          game1.sport === game2.sport &&
-          game1.teamName !== game2.teamName
-        ) {
-          createMatch(game1, game2);
-        }
-      }
-    }
-  };
-
-  const createMatch = (game1: Game, game2: Game) => {
-    const newMatch: Match = {
-      id: Date.now(),
-      game1,
-      game2,
-      matchedAt: new Date()
-    };
-    
-    setMatches(prev => [...prev, newMatch]);
-    
-    setGames(prev => prev.map(g => {
-      if (g.id === game1.id || g.id === game2.id) {
-        return {
-          ...g,
-          status: 'matched' as const,
-          matchedWith: g.id === game1.id ? game2.id : game1.id
-        };
-      }
-      return g;
-    }));
-    
-    showNotification(`マッチング成立！ ${game1.teamName} × ${game2.teamName}`);
-  };
-
-  const showNotification = (message: string) => {
-    setNotification(message);
-    setTimeout(() => setNotification(null), 5000);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +89,8 @@ export const Dashboard: React.FC = () => {
       location,
       contact,
       description,
-      status: 'open'
+      status: 'open',
+      ownerId: user?.id || 'anonymous'
     };
     
     setGames([...games, newGame]);
@@ -130,20 +108,47 @@ export const Dashboard: React.FC = () => {
 
   const handleDeleteGame = (id: number) => {
     setMatches(prev => prev.filter(m => 
-      m.game1.id !== id && m.game2.id !== id
+      m.game.id !== id
     ));
     
-    const game = games.find(g => g.id === id);
-    if (game && game.matchedWith) {
-      setGames(prev => prev.map(g => {
-        if (g.id === game.matchedWith) {
-          return { ...g, status: 'open' as const, matchedWith: undefined };
-        }
-        return g;
-      }));
-    }
+    setApplications(prev => prev.filter(a => a.gameId !== id));
     
     setGames(prev => prev.filter(g => g.id !== id));
+  };
+
+  const handleApplyToGame = (game: Game) => {
+    if (!user?.id) {
+      alert('ログインが必要です。');
+      return;
+    }
+
+    if (game.ownerId === user.id) {
+      alert('自分の募集には申請できません。');
+      return;
+    }
+
+    const existingApplication = applications.find(
+      app => app.gameId === game.id && app.applicantId === user.id
+    );
+
+    if (existingApplication) {
+      alert('既にこの募集に申請済みです。');
+      return;
+    }
+
+    const newApplication: Application = {
+      id: Date.now(),
+      gameId: game.id,
+      applicantTeamName: user.teamName || teamName || 'Unknown Team',
+      applicantContact: user.email || contact,
+      applicantId: user.id,
+      status: 'pending',
+      appliedAt: new Date(),
+      message: ''
+    };
+
+    setApplications(prev => [...prev, newApplication]);
+    showNotification(`${game.teamName}に申請を送信しました！`);
   };
 
   const openGames = games.filter(g => g.status === 'open');
@@ -153,12 +158,6 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="App">
-      {notification && (
-        <div className="notification">
-          {notification}
-        </div>
-      )}
-      
       <Header />
       
       <main>
@@ -252,40 +251,6 @@ export const Dashboard: React.FC = () => {
             </form>
           </section>
           
-          <section className="matches-section">
-            <h2>🤝 マッチング成立</h2>
-            {matches.length === 0 ? (
-              <p className="no-data">まだマッチングはありません</p>
-            ) : (
-              <div className="match-list">
-                {matches.map(match => (
-                  <div key={match.id} className="match-card">
-                    <div className="match-header">
-                      <span className="match-badge">マッチング成立！</span>
-                      <span className="match-date">
-                        {match.game1.date} {match.game1.time}
-                      </span>
-                    </div>
-                    <div className="match-teams">
-                      <div className="team">
-                        <h4>{match.game1.teamName}</h4>
-                        <p>📍 {match.game1.location}</p>
-                        <p>📧 {match.game1.contact}</p>
-                      </div>
-                      <div className="vs">VS</div>
-                      <div className="team">
-                        <h4>{match.game2.teamName}</h4>
-                        <p>📍 {match.game2.location}</p>
-                        <p>📧 {match.game2.contact}</p>
-                      </div>
-                    </div>
-                    <div className="match-sport">{match.game1.sport}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-          
           <section className="game-list-section">
             <div className="section-header">
               <h2>📋 募集中の練習試合</h2>
@@ -321,12 +286,28 @@ export const Dashboard: React.FC = () => {
                         <p className="game-description">💬 {game.description}</p>
                       )}
                     </div>
-                    <button 
-                      className="delete-button"
-                      onClick={() => handleDeleteGame(game.id)}
-                    >
-                      削除
-                    </button>
+                    <div className="game-actions">
+                      {game.ownerId === user?.id ? (
+                        <button 
+                          className="delete-button"
+                          onClick={() => handleDeleteGame(game.id)}
+                        >
+                          削除
+                        </button>
+                      ) : (
+                        <button 
+                          className="apply-button"
+                          onClick={() => handleApplyToGame(game)}
+                          disabled={applications.some(
+                            app => app.gameId === game.id && app.applicantId === user?.id
+                          )}
+                        >
+                          {applications.some(
+                            app => app.gameId === game.id && app.applicantId === user?.id
+                          ) ? '申請済み' : '申請する'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
