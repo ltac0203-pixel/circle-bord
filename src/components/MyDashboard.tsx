@@ -67,7 +67,6 @@ export const MyDashboard: React.FC<MyDashboardProps> = ({
     );
   }
 
-  // Filter data for current user
   const myGames = games.filter(game => game.ownerId === user.id);
   const myApplications = applications.filter(app => app.applicantId === user.id);
   const receivedApplications = applications.filter(app => 

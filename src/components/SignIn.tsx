@@ -83,10 +83,6 @@ export const SignIn: React.FC = () => {
             新規登録はこちら
           </Link>
         </div>
-
-        <div className="auth-demo-note">
-          <p>📌 デモ版: どんなメールアドレス・パスワードでもサインインできます</p>
-        </div>
       </div>
     </div>
   );

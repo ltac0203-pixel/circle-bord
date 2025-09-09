@@ -156,7 +156,6 @@
   margin: 0;
 }
 
-/* レスポンシブ対応 */
 @media (max-width: 480px) {
   .auth-card {
     padding: 30px 20px;

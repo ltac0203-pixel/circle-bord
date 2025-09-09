@@ -19,7 +19,6 @@ export const SignUp: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    // パスワード確認
     if (password !== confirmPassword) {
       setError('パスワードが一致しません');
       return;

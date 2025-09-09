@@ -42,7 +42,6 @@ interface Match {
 export const MainApp: React.FC = () => {
   const { user } = useAuth();
 
-  // デモ用の練習試合データ
   const demoGames: Game[] = [
     {
       id: 1,
@@ -178,14 +177,12 @@ export const MainApp: React.FC = () => {
     const game = games.find(g => g.id === application.gameId);
     if (!game) return;
 
-    // Update application status to approved
     setApplications(prev => prev.map(app => 
       app.id === application.id 
         ? { ...app, status: 'approved' as const }
         : app
     ));
 
-    // Create a match
     const newMatch: Match = {
       id: Date.now(),
       game,
@@ -199,14 +196,12 @@ export const MainApp: React.FC = () => {
 
     setMatches(prev => [...prev, newMatch]);
 
-    // Update game status to matched
     setGames(prev => prev.map(g => 
       g.id === game.id 
         ? { ...g, status: 'matched' as const }
         : g
     ));
 
-    // Reject all other pending applications for this game
     setApplications(prev => prev.map(app => 
       app.gameId === application.gameId && app.id !== application.id && app.status === 'pending'
         ? { ...app, status: 'rejected' as const }

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
+import axios from 'axios';
 
 interface User {
   id: string;
@@ -17,43 +18,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('demo_user');
+    const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const isAuthenticated = !!user;
 
   const signIn = async (email: string, password: string) => {
-    if (email && password) {
-      const demoUser: User = {
-        id: Date.now().toString(),
-        email,
-        name: email.split('@')[0],
-        teamName: '○○大学サークル'
-      };
+    try {
+      const response = await axios.post('http://localhost:3001/api/login', { email, password });
+      const userData = response.data.user;
       
-      setUser(demoUser);
-      localStorage.setItem('demo_user', JSON.stringify(demoUser));
-    } else {
-      throw new Error('メールアドレスとパスワードを入力してください');
+      const appUser: User = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        teamName: userData.teamName
+      };
+
+      setUser(appUser);
+      localStorage.setItem('user', JSON.stringify(appUser));
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(error.response.data.message || 'サインインに失敗しました。');
+      }
+      throw new Error('サインイン中に不明なエラーが発生しました。');
     }
   };
 
   const signUp = async (email: string, password: string, name: string, teamName?: string) => {
+    // TODO: サインアップ機能もバックエンドに接続する必要があります
     if (email && password && name) {
       const newUser: User = {
         id: Date.now().toString(),
@@ -63,7 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
       
       setUser(newUser);
-      localStorage.setItem('demo_user', JSON.stringify(newUser));
+      localStorage.setItem('user', JSON.stringify(newUser));
     } else {
       throw new Error('必須項目を入力してください');
     }
@@ -71,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = () => {
     setUser(null);
-    localStorage.removeItem('demo_user');
+    localStorage.removeItem('user');
   };
 
   return (
@@ -79,4 +75,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
