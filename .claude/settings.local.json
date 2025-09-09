@@ -23,7 +23,12 @@
       "Bash(taskkill:*)",
       "Bash(pkill:*)",
       "Bash(PORT=3001 npm start)",
-      "Bash(PORT=3002 npm start)"
+      "Bash(PORT=3002 npm start)",
+      "Bash(git checkout:*)",
+      "Bash(tree:*)",
+      "Bash(curl:*)",
+      "mcp__serena-mcp-server__find_file",
+      "Bash(npx playwright:*)"
     ],
     "deny": [],
     "ask": []
